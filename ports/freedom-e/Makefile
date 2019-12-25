@@ -4,8 +4,8 @@ FREEDOM_E_SDK ?= $(HOME)/src/freedom-e-sdk
 RISCV_OPENOCD_PATH ?= /opt/riscv-openocd
 
 BSP_BASE = $(FREEDOM_E_SDK)/bsp
-BOARD ?= sifive-hifive1
-#BOARD ?= sifive-hifive1-revb
+#BOARD ?= sifive-hifive1
+BOARD ?= sifive-hifive1-revb
 #BOARD ?= freedom-e310-arty
 #BOARD ?= coreip-e20-arty
 #BOARD ?= coreip-e20-rtl
@@ -51,10 +51,11 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(PLATFORM_DIR)
+INC += -I$(PLATFORM_DIR)/install/include
 INC += -I$(FREEDOM_E_SDK)/freedom-metal
 
 CFLAGS_RISCV = -march=$(RISCV_ARCH) -mabi=$(RISCV_ABI) -mcmodel=$(RISCV_CMODEL) -ffunction-sections -fdata-sections -Wno-format
-CFLAGS = $(INC) -Wall -Werror $(COPT) $(CFLAGS_RISCV) -Os
+CFLAGS = $(INC) -Wall $(COPT) $(CFLAGS_RISCV) -Os -Werror
 LDFLAGS = -Wl,--gc-sections -Wl,-Map,$@.map -nostartfiles -nostdlib -L$(PLATFORM_DIR)/install/lib/$(CONFIGURATION) -T$(PLATFORM_DIR)/metal.default.lds  -march=$(RISCV_ARCH) -mabi=$(RISCV_ABI) -mcmodel=$(RISCV_CMODEL)
 LDFLAGS += -Xlinker --defsym=__stack_size=0x800 -Xlinker --defsym=__heap_size=0x000
 LIBS = -Wl,--start-group -lc -lm -lgcc -lmetal -lmetal-gloss -Wl,--end-group
@@ -74,8 +75,12 @@ micropython: $(OBJ)
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
 
+#upload: micropython
+#	$(FREEDOM_E_SDK)/scripts/upload --elf micropython --openocd $(RISCV_OPENOCD_PATH)/bin/openocd --gdb $(CROSS_COMPILE)gdb --openocd-config $(BSP_BASE)/$(BOARD)/openocd.cfg
+#	echo "Successfully uploaded 'micropython' to $(BOARD)."
+
 upload: micropython
-	$(FREEDOM_E_SDK)/scripts/upload --elf micropython --openocd $(RISCV_OPENOCD_PATH)/bin/openocd --gdb $(CROSS_COMPILE)gdb --openocd-config $(BSP_BASE)/$(BOARD)/openocd.cfg
+	$(FREEDOM_E_SDK)/scripts/upload --hex micropython.hex --jlink JLinkExe
 	echo "Successfully uploaded 'micropython' to $(BOARD)."
 
 # ---- Clean ----
