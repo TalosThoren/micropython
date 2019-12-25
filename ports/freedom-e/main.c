@@ -5,7 +5,7 @@
 #include <metal.h>
 #include <metal/uart.h>
 #include <metal/tty.h>
-#include <metal/drivers/sifive,fe310-g000,pll.h>
+#include <metal/drivers/sifive_fe310-g000_pll.h>
 
 #include "py/compile.h"
 #include "py/runtime.h"
@@ -18,7 +18,8 @@
 #include "py/mphal.h"
 
 int mp_hal_stdin_rx_chr(void) {
-    unsigned char c = 0;
+    //unsigned char c = 0;
+    int c = 0;
     metal_uart_getc(__METAL_DT_STDOUT_UART_HANDLE, &c);
     return c;
 }
